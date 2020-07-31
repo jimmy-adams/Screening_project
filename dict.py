@@ -28,7 +28,9 @@ class TreeWidget(QTreeWidget):
         print(len(self.rootList), self.rootList)
 
         self.insertTopLevelItems(0, self.rootList)
-
+        self.initUI()
+    def initUI(self):
+        self.show()
     def generateTreeWidget(self, data, root):
         if isinstance(data, dict):
             for key in data.keys():
@@ -47,7 +49,6 @@ class TreeWidget(QTreeWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     win = TreeWidget()
-    win.show()
     sys.exit(app.exec_())
 
 
