@@ -20,11 +20,6 @@ class Table(QWidget):
         
         QHB_Widget = QWidget()
         
-        
-        
-        
-        
-        
         #============Read & Load data from config.json===================#
         f = open("config.json", encoding='utf-8')
         self.data = json.load(f)
@@ -35,18 +30,13 @@ class Table(QWidget):
         root = QTreeWidget() # define a QtreeWidget() type object;
         self.generateTreeWidget(self.data, root)
         self.TableWidget=QTableWidget(len(self.rootList),2)
-        
-        #self.TableWidget.cellClicked.connect(self.cell_was_clicked)
-        
-        self.TableWidget.cellClicked.connect(self.cell_was_clicked)
-
+        self.TableWidget.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.TableWidget.itemSelectionChanged.connect(self.itemselected)
         self.TableWidget.setContextMenuPolicy(Qt.CustomContextMenu)# Allow right click function
-        
         self.TableWidget.customContextMenuRequested.connect(self.generateMenu)
        
         # TableWidget.setRowCount(4)
         # TableWidget.setColumnCount(3)
-
         print(len(self.rootList))
 
         #设置水平方向的表头标签与垂直方向上的表头标签，注意必须在初始化行列之后进行，否则，没有效果
@@ -105,19 +95,30 @@ class Table(QWidget):
         self.setLayout(self.layout)
         
         self.show()
+        
+    def itemselected(self):
+        #print('selected items')
+        self.x = []
+        self.y = []
+        for i in range(len(self.TableWidget.selectedIndexes())):
+            #print(self.TableWidget.selectedIndexes()[i].row())
+            self.x.append(self.TableWidget.selectedIndexes()[i].row())
+            self.y.append(self.TableWidget.selectedIndexes()[i].column())
+        
     def cell_was_clicked(self, row, column):
         self.TableWidget.cellChanged.connect(self.cell_was_changed)
-        
-        self.x = row
-        self.y = column
-        
+        self.x = []
+        self.y = []
+        self.x.append(row)
+        self.y.append(column)
+        #print('selected items')
+        #print(self.TableWidget.selectedIndexes())
         
     def cell_was_changed(self,row,column):
         print('row:%d,column:%d was changed'% (row, column+1))
         
     def generateMenu(self,pos):
            try:
-              
               self.contextMenu = QMenu()
               self.actionA = self.contextMenu.addAction(u'删除')
               self.actionB = self.contextMenu.addAction(u'插入')
@@ -125,12 +126,21 @@ class Table(QWidget):
               action = self.contextMenu.exec_(self.TableWidget.mapToGlobal(pos))
               self.contextMenu.show()
               if action == self.actionA:
-                 print('row:%d,column:%d was changed'% (self.x, self.y))
-                 if self.y == 0:        # if the column is 1, it means the value change will not affect 
-                    self.TableWidget.removeRow(self.x)
+                 #print('row:%d,column:%d was changed'% (self.x[0], self.y[0]))
+                 if self.y[0] == 0:        # if the column is 1, it means the value change will not affect 
+                     index_first = self.x[0]  
+                     print(self.x)
+                     for i in self.x:
+                         #print('The row is %d',i)
+                         #=================================================#
+                         # Reminder:the removeRow function in QtableWidget #
+                         # will refresh the table every time the removal is#
+                         # made. so when indexing, keep tracking of the 1st#
+                         self.TableWidget.removeRow(index_first) 
                  else:
-                    newItem = QTableWidgetItem('')
-                    self.TableWidget.setItem(self.x,1,newItem)
+                     for i in range(len(self.x)):
+                         newItem = QTableWidgetItem('')
+                         self.TableWidget.setItem(self.x[i],1,newItem)
               elif action == self.actionB:
                  cur_len = self.TableWidget.rowCount()
                  self.TableWidget.insertRow(cur_len)
@@ -175,13 +185,17 @@ class Table(QWidget):
         #=============================================================================================#
         data = {}
         if A == QMessageBox.Yes:
-          for i in range(self.TableWidget.rowCount()):
-            #print(self.TableWidget.item(i,0).text())
-            temp_dict = {self.TableWidget.item(i,0).text() : self.TableWidget.item(i,1).text()}
-            data.update(temp_dict)
-          #============update the dict========================#
-          container = open("config.json",'w')
-          json.dump(data,container)
+            print(self.TableWidget.rowCount())
+            for i in range(self.TableWidget.rowCount()):
+                print(self.TableWidget.item(i,1))
+                if self.TableWidget.item(i,1) is None:
+                    temp_dict = {self.TableWidget.item(i,0).text() : ''}
+                else:
+                    temp_dict = {self.TableWidget.item(i,0).text() : self.TableWidget.item(i,1).text()}
+                data.update(temp_dict)
+            #============update the dict========================#
+            container = open("config.json",'w')
+            json.dump(data,container)
           #===================================================#
         else:
           pass

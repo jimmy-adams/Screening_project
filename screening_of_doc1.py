@@ -26,6 +26,7 @@ def check_and_change(document, replace_dict, id_type):
     遍历word中的所有 paragraphs，在每一段中发现含有key 的内容，就替换为 value 。 
     （key 和 value 都是replace_dict中的键值对。）
     """
+    display_list = []
     if id_type == 1:
         #=======Process on the paragraph ========================================#
         for para in document.paragraphs:
@@ -33,7 +34,8 @@ def check_and_change(document, replace_dict, id_type):
                 for key, value in replace_dict.items():
                     if key in para.runs[i].text:
                         print(key+"-->"+value)
-                        para.runs[i].text = para.runs[i].text.replace(key, value)  
+                        para.runs[i].text = para.runs[i].text.replace(key, value)
+                        display_list.append([key,value])
        #======Process on the table==============================================#
         for table in document.tables[:]:
            for i, row in enumerate(table.rows[:]):   # 读每行
@@ -42,6 +44,7 @@ def check_and_change(document, replace_dict, id_type):
                         if key in cell.text:
                             print(key+"-->"+value)
                             cell.text = cell.text.replace(key,value)
+                            display_list.append([key,value])
        #========================================================================#
        #======Process on the header & foot======================================#
         for section in document.sections:
@@ -67,6 +70,7 @@ def check_and_change(document, replace_dict, id_type):
                                 if key in para.runs[i].text:
                                     print(key+"-->"+value)
                                     para.runs[i].text = para.runs[i].text.replace(key, value)
+                                    display_list.append([key,value])
                 if shape.has_table:#判断Shape是否含有表格
                     table = shape.table
                     for cell in table.iter_cells():#遍历表格的cell
@@ -77,8 +81,9 @@ def check_and_change(document, replace_dict, id_type):
                                      if key in para.runs[i].text:
                                          print(key+"-->"+value)
                                          para.runs[i].text = para.runs[i].text.replace(key, value)
+                                         display_list.append([key,value])
        #========================================================================#            
-    return document   
+    return (document,display_list)   
     
 
 def main():
